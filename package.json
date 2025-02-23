@@ -1,0 +1,27 @@
+{
+  "name": "http-api-project",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/twig-sh/http-api-project#readme",
+  "bugs": {
+    "url": "https://github.com/twig-sh/http-api-project/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/twig-sh/http-api-project.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "pretest": "eslint ./src --fix",
+    "test": "echo \"Tests complete\""
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-import": "^2.31.0"
+  }
+}
