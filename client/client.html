@@ -89,10 +89,9 @@
     };
 
     const sendGetHead = async (userForm) => {
-      const urlSelector = userForm.querySelector('#urlField');
       const methodSelector = userForm.querySelector('#methodSelect');
 
-      let url = urlSelector.options[urlSelector.selectedIndex].value;
+      let url = userForm.action;
       let method = methodSelector.options[methodSelector.selectedIndex].value;
 
       let response = await fetch(url, {
@@ -137,6 +136,18 @@
 </head>
 
 <body>
+  <section id="allGames">
+    <h3>Get All Games</h3>
+    <form id="userForm" action="/getAllGames" method="get">
+      <select id="methodSelect">
+        <option value="get">GET</option>
+        <option value="head">HEAD</option>
+      </select>
+      <input type="submit" value="Get Games" />
+    </form>
+  </section>
+
+
   <section id="top">
     <h3>POST Status Code Tests</h3>
     <form id="gameForm" action="/addGame" method="post">
