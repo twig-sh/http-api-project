@@ -34,7 +34,7 @@
         if (obj.message) {
           content.innerHTML += `<p>${obj.message}</p>`;
         } else {
-          content.innerHTML += `<p>${JSON.stringify(obj.boardGames)}</p>`;
+          content.innerHTML += `<p>${JSON.stringify(obj)}</p>`;
         }
       }
     };
@@ -60,19 +60,19 @@
       handleResponse(response, method);
     };
 
-    const sendPost = async (gameForm) => {
-      const url = gameForm.getAttribute('action');
-      const method = gameForm.getAttribute('method');
+    const sendPost = async (addForm) => {
+      const url = addForm.getAttribute('action');
+      const method = addForm.getAttribute('method');
 
-      const idField = gameForm.querySelector('#idField');
-      const nameField = gameForm.querySelector('#nameField');
-      const yearField = gameForm.querySelector('#yearField');
-      const minPlayersField = gameForm.querySelector('#minPlayersField');
-      const maxPlayersField = gameForm.querySelector('#maxPlayersField');
-      const playTimeField = gameForm.querySelector('#playTimeField');
-      const ageField = gameForm.querySelector('#ageField');
-      const mechanicsField = gameForm.querySelector('#mechanicsField');
-      const ratingField = gameForm.querySelector('#ratingField');
+      const idField = addForm.querySelector('#idField');
+      const nameField = addForm.querySelector('#nameField');
+      const yearField = addForm.querySelector('#yearField');
+      const minPlayersField = addForm.querySelector('#minPlayersField');
+      const maxPlayersField = addForm.querySelector('#maxPlayersField');
+      const playTimeField = addForm.querySelector('#playTimeField');
+      const ageField = addForm.querySelector('#ageField');
+      const mechanicsField = addForm.querySelector('#mechanicsField');
+      const ratingField = addForm.querySelector('#ratingField');
 
       const formData = `id=${idField.value}&name=${nameField.value}&yearPublished=${yearField.value}&minPlayers=${minPlayersField.value}&maxPlayers=${maxPlayersField.value}&playTime=${playTimeField.value}&minAge=${ageField.value}&mechanics=${mechanicsField.value}`;
 
@@ -88,10 +88,9 @@
       handleResponse(response, method);
     };
 
-    const sendGetHead = async (userForm) => {
-      const methodSelector = userForm.querySelector('#methodSelect');
+    const sendGetHead = async (url) => {
+      const methodSelector = document.querySelector('#methodSelect');
 
-      let url = userForm.action;
       let method = methodSelector.options[methodSelector.selectedIndex].value;
 
       let response = await fetch(url, {
@@ -105,18 +104,39 @@
     }
 
     const init = () => {
-      const gameForm = document.querySelector('#gameForm');
-      const userForm = document.querySelector('#userForm');
+      const addForm = document.querySelector('#addForm');
+      const allGamesForm = document.querySelector('#allGamesForm');
+      const byMechanicForm = document.querySelector('#byMechanicForm');
+      const getGameForm = document.querySelector('#getGameForm');
+      const byPlayersForm = document.querySelector('#byPlayersForm');
 
       const addGame = (e) => {
         e.preventDefault();
-        sendPost(gameForm);
+        sendPost(addForm);
         return false;
       }
 
-      const checkUsers = (e) => {
+      const checkGames = (e) => {
         e.preventDefault();
-        sendGetHead(userForm);
+
+        const queryParam = e.currentTarget.querySelector('#queryParam').value;
+        let url = e.currentTarget.action;
+
+        switch (e.currentTarget.getAttribute("data-path")) {
+          case "getGamesByMechanic":
+            url += `?mechanic=${queryParam}`;
+            break;
+
+          case "getGame":
+            url += `?id=${queryParam}`;
+            break;
+
+          case "getGamesByPlayers":
+            url += `?players=${queryParam}`;
+            break;
+        }
+
+        sendGetHead(url);
         return false;
       }
 
@@ -126,9 +146,15 @@
         return false
       }
 
-      gameForm.addEventListener('submit', addGame);
-      userForm.addEventListener('submit', checkUsers);
-      rateForm.addEventListener('submit', rateGame)
+      // get requests
+      allGamesForm.addEventListener('submit', checkGames);
+      byMechanicForm.addEventListener('submit', checkGames);
+      getGameForm.addEventListener('submit', checkGames);
+      byPlayersForm.addEventListener('submit', checkGames);
+
+      // post requests
+      addForm.addEventListener('submit', addGame);
+      rateForm.addEventListener('submit', rateGame);
     };
 
     window.onload = init;
@@ -136,56 +162,78 @@
 </head>
 
 <body>
-  <section id="allGames">
-    <h3>Get All Games</h3>
-    <form id="userForm" action="/getAllGames" method="get">
-      <select id="methodSelect">
-        <option value="get">GET</option>
-        <option value="head">HEAD</option>
-      </select>
-      <input type="submit" value="Get Games" />
-    </form>
+  <section id="getRequests">
+
+    <select id="methodSelect">
+      <option value="get">GET</option>
+      <option value="head">HEAD</option>
+    </select>
+
+    <div id="allGames">
+      <h3>Get All Games</h3>
+      <form id="allGamesForm" action="/getAllGames" data-path="getAllGames" param="" method="get">
+        <input type="submit" value="Get Games" />
+        <div id="queryParam" value=""></div>
+      </form>
+    </div>
+
+    <div id="byMechanic">
+      <h3>Get Games By Mechanic</h3>
+      <form id="byMechanicForm" action="/getGamesByMechanic" data-path="getGamesByMechanic" method="get">
+        <label for="mechanic">Mechanic: </label>
+        <input id="queryParam" type="text" name="mechanic" />
+        <input type="submit" value="Get Games By Mechanic" />
+      </form>
+    </div>
+
+    <div id="getGame">
+      <h3>Get Game</h3>
+      <form id="getGameForm" action="/getGame" data-path="getGame" method="get">
+        <label for="id">ID: </label>
+        <input id="queryParam" type="number" name="id" min="0" max="99999999999" />
+        <input type="submit" value="Get Game" />
+      </form>
+    </div>
+
+    <div id="byPlayers">
+      <h3>Get Games By Player Count</h3>
+      <form id="byPlayersForm" action="/getGamesByPlayers" data-path="getGamesByPlayers" method="get">
+        <label for="id">Players: </label>
+        <input id="queryParam" type="number" name="id" min="0" max="100" />
+        <input type="submit" value="Get Games By Players" />
+      </form>
+    </div>
   </section>
 
 
-  <section id="top">
-    <h3>POST Status Code Tests</h3>
-    <form id="gameForm" action="/addGame" method="post">
+  <section id="posting">
+    <h3>Add Game</h3>
+    <form id="addForm" action="/addGame" method="post">
       <label for="id">ID: </label>
-      <input id="idField" type="number" name="id" min="0" />
+      <input id="idField" type="number" name="id" min="0" max="99999999999" />
       <label for="name">Name: </label>
       <input id="nameField" type="text" name="name" />
       <label for="yearPublished">Year Published: </label>
-      <input id="yearField" type="number" name="year" />
+      <input id="yearField" type="number" name="year" min="-8000" max="2050" />
       <label for="minPlayers">Min Players: </label>
       <input id="minPlayersField" type="number" name="minPlayers" min="0" max="100" step="1" />
       <label for="maxPlayers">Max Players: </label>
       <input id="maxPlayersField" type="number" name="maxPlayers" min="0" max="100" step="1" />
       <label for="playTime">Play Time: </label>
-      <input id="playTimeField" type="number" name="playTime" min="0" step="1" />
+      <input id="playTimeField" type="number" name="playTime" min="0" max="1440" step="1" />
       <label for="minAge">Minimum Age: </label>
       <input id="ageField" type="number" name="age" min="0" max="123" step="1" />
       <label for="mechanics">Mechanics (Comma separated): </label>
       <input id="mechanicsField" type="text" name="mechanics" />
       <input type="submit" value="Add Game" />
     </form>
+    <h3>Rate Game</h3>
     <form id="rateForm" action="/rateGame" method="post">
       <label for="id">ID: </label>
-      <input id="idField" type="number" name="id" min="0" />
+      <input id="idField" type="number" name="id" min="0" max="99999999999" />
       <label for="rating">Rating: </label>
       <input id="ratingField" type="number" name="rating" min="0" max="10" step="0.01" />
       <input type="submit" value="Rate Game" />
-    </form>
-    <form id="userForm" action="/getUsers" method="get">
-      <select id='urlField'>
-        <option value='/getUsers'>/getUsers</option>
-        <option value='/notReal'>/notReal</option>
-      </select>
-      <select id="methodSelect">
-        <option value="get">GET</option>
-        <option value="head">HEAD</option>
-      </select>
-      <input type="submit" value="Get Users" />
     </form>
   </section>
   <section id="content">
