@@ -15,6 +15,7 @@ const getRouter = {
   notFound: jsonResponses.notFound,
 };
 
+// parse the request body in smaller chunks to send to the handler
 const parseBody = (req, res, handler) => {
   const body = [];
 
@@ -36,6 +37,7 @@ const parseBody = (req, res, handler) => {
   });
 };
 
+// send the appropriate POST request based on the parsedUrl
 const handlePost = (req, res, parsedUrl) => {
   if (parsedUrl.pathname === '/addGame') {
     parseBody(req, res, jsonResponses.addGame);
@@ -45,6 +47,7 @@ const handlePost = (req, res, parsedUrl) => {
   }
 };
 
+// send the appropriate GET/HEAD request based on the parsedUrl
 const handleGet = (req, res, parsedUrl) => {
   if (getRouter[parsedUrl.pathname]) {
     getRouter[parsedUrl.pathname](req, res);

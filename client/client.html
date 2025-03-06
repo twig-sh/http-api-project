@@ -3,42 +3,83 @@
 
 <head>
   <title>Our simple HTTP server</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="/style.css">
 
   <script>
+    const gamesHTMLUpdate = (game) => {
+      content.innerHTML += `
+              <div class="gameCard">
+                <p class="gameCardContent">Name: ${game.Name}</p>
+                <p class="gameCardContent">ID: ${game.ID}</p>
+                <p class="gameCardContent">Rating: ${game.Rating}</p>
+                <p class="gameCardContent">BGG Rank: ${game["BGG Rank"]}</p>
+                <p class="gameCardContent">Year Published: ${game["Year Published"]}</p>
+                <p class="gameCardContent">Minimum Players: ${game["Min Players"]}</p>
+                <p class="gameCardContent">Maximum Players: ${game["Max Players"]}</p>
+                <p class="gameCardContent">Play Time: ${game["Play Time"]}</p>
+                <p class="gameCardContent">Minimum Age: ${game["Min Age"]}</p>
+                <p class="gameCardContent">Mechanics: ${game.Mechanics.join(', ')}</p>
+              </div>
+              `
+    };
+
+    // handles the response obtained from the server
     const handleResponse = async (response, method) => {
+      const header = document.querySelector('#header');
       const content = document.querySelector('#content');
 
+      // reset the content block
+      content.innerHTML = "";
+
+      // print the appropriate status code per status
       switch (response.status) {
         case 200:
-          content.innerHTML = `<b>Success</b>`;
+          header.innerHTML = `<b>Success</b>`;
           break;
         case 201:
-          content.innerHTML = '<b>Created</b>';
+          header.innerHTML = '<b>Created</b>';
           break;
         case 204:
-          content.innerHTML = '<b>Updated (No Content)</b>';
+          header.innerHTML = '<b>Updated (No Content)</b>';
           break;
         case 400:
-          content.innerHTML = `<b>Bad Request</b>`;
+          header.innerHTML = `<b>Bad Request</b>`;
           break;
         default:
-          content.innerHTML = `<b>Not Found</b>`;
+          header.innerHTML = `<b>Not Found</b>`;
           break;
       }
 
+      // no content should be shown for HEAD requests, only GET requests
       if (method !== 'head') {
         const obj = await response.json();
         console.log(obj);
 
+        // if the object contains a status message, print the status message (POST requests
+        // and errors)
         if (obj.message) {
           content.innerHTML += `<p>${obj.message}</p>`;
-        } else {
-          content.innerHTML += `<p>${JSON.stringify(obj)}</p>`;
+        }
+        // if the object only contains one game (as in getGame), the ID should be accessible
+        // from the top layer of the object
+        else if (obj.ID) {
+          gamesHTMLUpdate(obj);
+        }
+        // The object's only internal layer is the array of objects (all other GET requests)
+        else {
+          obj.forEach(game => {
+            gamesHTMLUpdate(game);
+          });
         }
       }
-    };
+    }
 
+    // send a POST request to rate a game with the body being the user inputted id and rating
     const ratePost = async (rateForm) => {
       const url = rateForm.getAttribute('action');
       const method = rateForm.getAttribute('method');
@@ -60,6 +101,8 @@
       handleResponse(response, method);
     };
 
+    // send a POST request to add a game. sends a body with a user inputted
+    // id, name, year published, min and max players, play time, min age, and mechanics array.
     const sendPost = async (addForm) => {
       const url = addForm.getAttribute('action');
       const method = addForm.getAttribute('method');
@@ -72,7 +115,6 @@
       const playTimeField = addForm.querySelector('#playTimeField');
       const ageField = addForm.querySelector('#ageField');
       const mechanicsField = addForm.querySelector('#mechanicsField');
-      const ratingField = addForm.querySelector('#ratingField');
 
       const formData = `id=${idField.value}&name=${nameField.value}&yearPublished=${yearField.value}&minPlayers=${minPlayersField.value}&maxPlayers=${maxPlayersField.value}&playTime=${playTimeField.value}&minAge=${ageField.value}&mechanics=${mechanicsField.value}`;
 
@@ -88,6 +130,7 @@
       handleResponse(response, method);
     };
 
+    // handler for all GET and HEAD requests
     const sendGetHead = async (url) => {
       const methodSelector = document.querySelector('#methodSelect');
 
@@ -103,6 +146,7 @@
       handleResponse(response, method);
     }
 
+    // setup all event listeners and forms
     const init = () => {
       const addForm = document.querySelector('#addForm');
       const allGamesForm = document.querySelector('#allGamesForm');
@@ -122,6 +166,8 @@
         const queryParam = e.currentTarget.querySelector('#queryParam').value;
         let url = e.currentTarget.action;
 
+        // update the url parameters here to lessen parameters to be sent to
+        // sendGetHead()
         switch (e.currentTarget.getAttribute("data-path")) {
           case "getGamesByMechanic":
             url += `?mechanic=${queryParam}`;
@@ -146,13 +192,13 @@
         return false
       }
 
-      // get requests
+      // GET requests
       allGamesForm.addEventListener('submit', checkGames);
       byMechanicForm.addEventListener('submit', checkGames);
       getGameForm.addEventListener('submit', checkGames);
       byPlayersForm.addEventListener('submit', checkGames);
 
-      // post requests
+      // POST requests
       addForm.addEventListener('submit', addGame);
       rateForm.addEventListener('submit', rateGame);
     };
@@ -163,7 +209,9 @@
 
 <body>
   <section id="getRequests">
+    <h2>GET/HEAD Requests</h2>
 
+    <span>Method: </span>
     <select id="methodSelect">
       <option value="get">GET</option>
       <option value="head">HEAD</option>
@@ -207,6 +255,8 @@
 
 
   <section id="posting">
+    <h2>POST Requests</h2>
+
     <h3>Add Game</h3>
     <form id="addForm" action="/addGame" method="post">
       <label for="id">ID: </label>
@@ -235,6 +285,8 @@
       <input id="ratingField" type="number" name="rating" min="0" max="10" step="0.01" />
       <input type="submit" value="Rate Game" />
     </form>
+  </section>
+  <section id="header">
   </section>
   <section id="content">
   </section>
