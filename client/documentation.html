@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Our simple HTTP server</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+
+<body>
+  <a href="/">Back to app</a>
+  <section id="getRequests">
+    <h2>GET/HEAD Requests</h2>
+
+    <div id="allGames">
+      <h3>Get All Games</h3>
+      <h4>Query Params</h4>
+      <p>No Supported Params</p>
+      <h4>Returns</h4>
+      <p>A JSON array of game objects.<br>
+        Format: [{ ID: number, Name: string, Year Published: number, Min Players: number, Max Players: number, Play
+        Time: number, Min Age: number, Rating?: number, BGG Rank?: number, mechanics: [string]}]
+      </p>
+      <h4>Example</h4>
+      <p>Request: /getAllGames<br>
+        Result: [{ ID: 237182, Name: 'Root', Year Published: 2018, Min Players: 2, Max Players: 4, Play Time: 90, Min
+        Age: 10, Rating: 8.1, BGG Rank: 27, Mechanics: ["Action Queue", "Action Retrieval", "Area Majority / Influence",
+        "Area Movement", ...]}, ...]
+      </p>
+    </div>
+
+    <div id="byMechanic">
+      <h3>Get Games By Mechanic</h3>
+      <h4>Query Params</h4>
+      <p><b>mechanic</b> - A mechanic of the game</p>
+      <h4>Returns</h4>
+      <p>A JSON array of game objects.<br>
+        Format: [{ ID: number, Name: string, Year Published: number, Min Players: number, Max Players: number, Play
+        Time: number, Min Age: number, Rating?: number, BGG Rank?: number, mechanics: [string]}]
+      </p>
+      <h4>Examples</h4>
+      <p>Request: /getGamesByMechanic?mechanic=Area Movement<br>
+        Result: [{ ID: 237182, Name: 'Root', Year Published: 2018, Min Players: 2, Max Players: 4, Play Time: 90, Min
+        Age: 10, Rating: 8.1, BGG Rank: 27, Mechanics: ["Action Queue", "Action Retrieval", "Area Majority / Influence",
+        "Area Movement", ...]}, ...]
+      </p>
+      <p>Request: /getGamesByMechanic<br>
+        Result: 400 Error</p>
+    </div>
+
+    <div id="getGame">
+      <h3>Get Game</h3>
+      <h4>Query Params</h4>
+      <p><b>id</b> - The id of the game</p>
+      <h4>Returns</h4>
+      <p>A JSON game object.<br>
+        Format: { ID: number, Name: string, Year Published: number, Min Players: number, Max Players: number, Play
+        Time: number, Min Age: number, Rating?: number, BGG Rank?: number, mechanics: [string]}
+      </p>
+      <h4>Examples</h4>
+      <p>Request: /getGame?id=237182<br>
+        Result: { ID: 237182, Name: 'Root', Year Published: 2018, Min Players: 2, Max Players: 4, Play Time: 90, Min
+        Age: 10, Rating: 8.1, BGG Rank: 27, Mechanics: ["Action Queue", "Action Retrieval", "Area Majority / Influence",
+        "Area Movement", ...]}
+      </p>
+      <p>Request: /getGame<br>
+        Result: 400 Error</p>
+    </div>
+
+    <div id="byPlayers">
+      <h3>Get Games By Player Count</h3>
+      <h4>Query Params</h4>
+      <p><b>players</b> - The player count a game can support</p>
+      <h4>Returns</h4>
+      <p>A JSON array of game objects.<br>
+        Format: [{ ID: number, Name: string, Year Published: number, Min Players: number, Max Players: number, Play
+        Time: number, Min Age: number, Rating?: number, BGG Rank?: number, mechanics: [string]}]
+      </p>
+      <h4>Examples</h4>
+      <p>Request: /getGamesByPlayers?players=3<br>
+        Result: [{ ID: 237182, Name: 'Root', Year Published: 2018, Min Players: 2, Max Players: 4, Play Time: 90, Min
+        Age: 10, Rating: 8.1, BGG Rank: 27, Mechanics: ["Action Queue", "Action Retrieval", "Area Majority / Influence",
+        "Area Movement", ...]}, ...]
+      </p>
+      <p>Request: /getGamesByPlayers<br>
+        Result: 400 Error</p>
+    </div>
+  </section>
+
+
+  <section id="posting">
+    <h2>POST Requests</h2>
+
+    <h3>Add Game</h3>
+    <h4>Supported Body Formats</h4>
+    <p>application/json, application/x-www-form-urlencoded</p>
+
+    <h4>Body Params</h4>
+    <p><b>ID</b> Type: <b>number</b> - The id of the game.<br>
+      <b>Name</b> Type: <b>string</b> - The name of the game.<br>
+      <b>Year Published</b> Type: <b>number</b> - The year of publication.<br>
+      <b>Min Players</b> Type: <b>number</b> - The minimum supported players.<br>
+      <b>Max Players</b> Type: <b>number</b> - The maximum supported players.<br>
+      <b>Play Time</b> Type: <b>number</b> - The game's play time in minutes.<br>
+      <b>Min Age</b> Type: <b>number</b> - The minimum recommended player age.<br>
+      <b>Mechanics</b> Type: <b>string</b> - A comma separated string of the game's mechanics.
+    </p>
+
+    <h4>Returns</h4>
+    <p>A JSON game object representing the new or updated game<br>
+      Format: { ID: number, Name: string, Year Published: number, Min Players: number, Max Players: number, Play Time:
+      number, Min Age: number, mechanics: [string]}
+    </p>
+
+    <h4>Examples</h4>
+    <p>Request: /addGame<br>
+      Body: {ID: 1, Name: 'game', Year Published: 2025, Min Players: 1, Max Players: 4, Play Time: 60, Min Age: 8,
+      Mechanics: 'Area Movement,Hand Management'}<br>
+      Result: {ID: 1, Name: 'game', Year Published: 2025, Min Players: 1, Max Players: 4, Play Time: 60, Min Age: 8,
+      Mechanics: ['Area Movement', 'Hand Management']}</p>
+
+    <p>Request: /addGame<br>
+      Body: {ID: 1, Name: 'game', Year Published: 2025, Min Players: 1, Max Players: 4, Min Age: 8, Mechanics: 'Area
+      Movement,Hand Management'}<br></p>
+    Result: 400 Error (Missing Play Time)
+
+    <h3>Rate Game</h3>
+    <h4>Supported Body Formats</h4>
+    <p>application/json, application/x-www-form-urlencoded</p>
+
+    <h4>Body Params</h4>
+    <p><b>ID</b> Type: <b>number</b> - The id of the game.<br>
+      <b>Rating</b> Type <b>number</b> - The rating of the game.
+    </p>
+
+    <h4>Returns</h4>
+    <p>A JSON game object representing the updated game, or a 404 if no game of with that id exists<br>
+      Format: { ID: number, Name: string, Year Published: number, Min Players: number, Max Players: number, Play Time:
+      number, Min Age: number, Rating: number, BGG Rank: number mechanics: [string]}
+    </p>
+
+    <h4>Examples</h4>
+    <p>Request: /rateGame<br>
+      Body: {ID: 237182, Rating: 9}<br>
+      Result: { ID: 237182, Name: 'Root', Year Published: 2018, Min Players: 2, Max Players: 4, Play Time: 90, Min
+      Age: 10, Rating: 9, BGG Rank: 27, Mechanics: ["Action Queue", "Action Retrieval", "Area Majority / Influence",
+      "Area Movement", ...]}</p>
+
+    <p>Request: /rateGame<br>
+      Body: {ID: 237182}<br></p>
+    Result: 400 Error (Missing Rating)
+
+    <p>Request: /rateGame<br>
+      Body: {ID: 123, Rating: 3}<br>
+      Result: 404 Error (Game Doesn't Exist)</p>
+  </section>
+</body>

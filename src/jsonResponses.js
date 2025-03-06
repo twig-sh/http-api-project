@@ -178,11 +178,11 @@ const rateGame = (req, res) => {
 
   // if it doesn't, send a bad request (400)
   if (gameObj === undefined) {
-    const badReq = {
-      message: 'Invalid ID input',
-      id: 'invalidParams',
+    const notFound = {
+      message: "Game Doesn't Exist",
+      id: 'notFound',
     };
-    return sendResponse(req, res, 400, badReq);
+    return sendResponse(req, res, 404, notFound);
   }
 
   const responseCode = 204;

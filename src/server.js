@@ -7,6 +7,7 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 const getRouter = {
   '/': htmlResponses.getIndex,
+  '/documentation': htmlResponses.getDocumentation,
   '/style.css': htmlResponses.getCSS,
   '/getAllGames': jsonResponses.getAllGames,
   '/getGamesByMechanic': jsonResponses.getGamesByMechanic,
